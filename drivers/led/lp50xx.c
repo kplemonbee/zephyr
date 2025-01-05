@@ -83,6 +83,7 @@ struct lp50xx_config {
 	uint8_t num_leds;
 	bool log_scale_en;
 	bool max_curr_opt;
+	bool channel_mode;
 	const struct led_info *leds_info;
 };
 
@@ -132,7 +133,11 @@ static int lp50xx_set_brightness(const struct device *dev,
 		return -EINVAL;
 	}
 
-	buf[0] = LP50XX_LED0_BRIGHTNESS(config->num_modules) + led_info->index;
+	if (config->channel_mode) {
+	    buf[0] = LP50XX_OUT0_COLOR(config->num_modules) + led_info->index;
+	} else {
+		buf[0] = LP50XX_LED0_BRIGHTNESS(config->num_modules) + led_info->index;
+	}
 	buf[1] = (value * 0xff) / 100;
 
 	return i2c_write_dt(&config->bus, buf, sizeof(buf));
@@ -157,6 +162,10 @@ static int lp50xx_set_color(const struct device *dev, uint32_t led,
 
 	if (!led_info) {
 		return -ENODEV;
+	}
+
+	if (config->channel_mode) {
+	    return -ENOSYS;
 	}
 
 	if (num_colors != led_info->num_colors) {
@@ -372,10 +381,14 @@ static const struct led_driver_api lp50xx_led_api = {
 		.gpio_enable		=					\
 			GPIO_DT_SPEC_INST_GET_OR(n, enable_gpios, {0}),		\
 		.num_modules		= nmodules,				\
-		.max_leds		= LP##id##_MAX_LEDS,			\
+		.max_leds		= (DT_INST_PROP(n, channel_mode))?	\
+					  LP##id##_MAX_LEDS		        \
+					    * LP50XX_COLORS_PER_LED		\
+					  : LP##id##_MAX_LEDS,			\
 		.num_leds		= ARRAY_SIZE(lp##id##_leds_##n),	\
 		.log_scale_en		= DT_INST_PROP(n, log_scale_en),	\
 		.max_curr_opt		= DT_INST_PROP(n, max_curr_opt),	\
+		.channel_mode   	= DT_INST_PROP(n, channel_mode),	\
 		.leds_info		= lp##id##_leds_##n,			\
 	};									\
 										\

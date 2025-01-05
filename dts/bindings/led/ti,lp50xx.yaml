@@ -17,6 +17,13 @@ properties:
     description: |
       If enabled a logarithmic dimming scale curve is used for LED brightness
       control. A linear dimming scale curve is used else.
+  channel_mode:
+    type: boolean
+    description: |
+      If enabled individual color channels can be controlled separately.
+      This can be used if many single color LEDs are connected instead of
+      bicolor or RGB LEDs. The color-mapping property is ignored in that case
+      (but still required).
 
 child-binding:
   properties:
