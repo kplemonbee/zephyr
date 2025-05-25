@@ -24,6 +24,8 @@ extern "C" {
 #include <zephyr/toolchain.h>
 #include <zephyr/dsp/types.h> /* float32_t, float64_t */
 
+
+#define  RPDO_CALLS_EXTENSION
 /* Use static variables instead of calloc() */
 #define CO_USE_GLOBALS
 
